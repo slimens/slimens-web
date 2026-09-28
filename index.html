@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Slimens Web (Telegram Edition)</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+</head>
+<body>
+
+  <!-- Модальное окно входа -->
+  <div id="authModal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="logo-icon">✈️</div>
+      <h2>Вход в Slimens</h2>
+      <p>Введите ваш никнейм для входа в чат</p>
+      <input type="text" id="nicknameInput" placeholder="@username" maxlength="20" onkeydown="if(event.key==='Enter') login()">
+      <button onclick="login()">Войти</button>
+      <div id="authError" class="auth-error"></div>
+    </div>
+  </div>
+
+  <!-- Главное окно приложения -->
+  <div id="appContainer" class="app-container hidden">
+    
+    <!-- Левая панель -->
+    <aside class="sidebar">
+      <div class="user-profile">
+        <div class="avatar">👤</div>
+        <div class="user-info">
+          <strong id="displayNickname">@username</strong>
+          <span class="status-online">онлайн</span>
+        </div>
+      </div>
+      
+      <div class="sidebar-section">
+        <div class="section-header">
+          <span>ЧАТЫ</span>
+          <button class="add-room-btn" onclick="createRoom()">+</button>
+        </div>
+        <ul id="roomsList" class="rooms-list">
+          <li class="room-item active" onclick="switchRoom('Общий чат')">
+            <div class="room-icon">#</div>
+            <div class="room-details">
+              <span class="room-name">Общий чат</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sidebar-section users-section">
+        <div class="section-header">
+          <span>В СЕТИ (<span id="onlineCount">0</span>)</span>
+        </div>
+        <ul id="usersList" class="users-list"></ul>
+      </div>
+    </aside>
+
+    <!-- Основная область чата -->
+    <main class="chat-area">
+      <header class="chat-header">
+        <div class="header-info">
+          <h2 id="currentRoomTitle"># Общий чат</h2>
+          <span class="header-status">участники онлайн</span>
+        </div>
+      </header>
+
+      <div id="messagesContainer" class="messages-container"></div>
+
+      <!-- Панель выбора стикеров -->
+      <div id="stickerPicker" class="sticker-picker hidden">
+        <div class="sticker-header">Стикеры</div>
+        <div class="sticker-grid" id="stickerGrid">
+          <!-- Стикеры генерируются в JS -->
+        </div>
+      </div>
+
+      <!-- Поле ввода -->
+      <footer class="chat-footer">
+        <input type="file" id="fileInput" hidden onchange="sendFile()">
+        <button class="icon-btn" onclick="document.getElementById('fileInput').click()" title="Прикрепить файл">📎</button>
+        
+        <div class="input-wrapper">
+          <input type="text" id="messageInput" placeholder="Написать сообщение..." onkeydown="handleKeyPress(event)">
+          <button class="icon-btn sticker-btn" onclick="toggleStickerPicker()" title="Стикеры">😊</button>
+        </div>
+
+        <button class="send-btn" onclick="sendMessage()">➤</button>
+      </footer>
+    </main>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
