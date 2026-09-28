@@ -2,22 +2,17 @@ const SERVER_URL = "https://slimens-server.onrender.com";
 const socket = io(SERVER_URL, { autoConnect: false });
 
 let myNickname = "";
-let currentRoom = "Общий чат";
+let currentRoom = "Чат телефапиков🍔";
 
-// Готовые публичные стикеры Telegram/Emoji CDN
 const STICKER_LIST = [
-  "https://fonts.gstatic.com/s/e/notoemoji/latest/1f60d/512.webp", // Влюбленный
-  "https://fonts.gstatic.com/s/e/notoemoji/latest/1f602/512.webp", // Смех
-  "https://fonts.gstatic.com/s/e/notoemoji/latest/1f60e/512.webp", // Крутой
-  "https://fonts.gstatic.com/s/e/notoemoji/latest/1f970/512.webp", // Сердечки
-  "https://fonts.gstatic.com/s/e/notoemoji/latest/1fe60/512.webp", 
-  "https://fonts.gstatic.com/s/e/notoemoji/latest/1f44d/512.webp", // Лайк
-  "https://fonts.gstatic.com/s/e/notoemoji/latest/1f525/512.webp", // Огонь
-  "https://fonts.gstatic.com/s/e/notoemoji/latest/1f389/512.webp", // Праздник
-  "https://fonts.gstatic.com/s/e/notoemoji/latest/1fa90/512.webp"
+  "https://fonts.gstatic.com/s/e/notoemoji/latest/1f60d/512.webp",
+  "https://fonts.gstatic.com/s/e/notoemoji/latest/1f602/512.webp",
+  "https://fonts.gstatic.com/s/e/notoemoji/latest/1f60e/512.webp",
+  "https://fonts.gstatic.com/s/e/notoemoji/latest/1f970/512.webp",
+  "https://fonts.gstatic.com/s/e/notoemoji/latest/1f44d/512.webp",
+  "https://fonts.gstatic.com/s/e/notoemoji/latest/1f525/512.webp"
 ];
 
-// Инициализация сетки стикеров
 window.onload = () => {
   const grid = document.getElementById("stickerGrid");
   if (grid) {
@@ -32,35 +27,47 @@ window.onload = () => {
 };
 
 function login() {
-  const input = document.getElementById("nicknameInput");
-  const nickname = input.value.trim().replace(/^@/, '');
+  const nickname = document.getElementById("nicknameInput").value.trim().replace(/^@/, '');
+  const password = document.getElementById("passwordInput").value.trim();
   const errorDiv = document.getElementById("authError");
 
   if (!nickname || nickname.length < 3) {
     errorDiv.innerText = "Никнейм должен быть от 3 символов";
     return;
   }
+  if (!password) {
+    errorDiv.innerText = "Введите пароль";
+    return;
+  }
 
-  errorDiv.innerText = "Подключение к серверу...";
+  errorDiv.innerText = "Авторизация...";
   socket.connect();
 
-  socket.emit("set_nickname", nickname, (response) => {
-    if (response && response.success) {
+  socket.emit("auth_user", { nickname, password }, (res) => {
+    if (res && res.success) {
       myNickname = nickname;
       document.getElementById("displayNickname").innerText = `@${myNickname}`;
       document.getElementById("authModal").classList.add("hidden");
       document.getElementById("appContainer").classList.remove("hidden");
+
+      // Отрисовываем список комнат с сервера
+      renderRoomsList(res.rooms);
       switchRoom("Общий чат");
     } else {
-      errorDiv.innerText = response ? response.message : "Ошибка входа или ник занят";
+      errorDiv.innerText = res ? res.message : "Ошибка входа";
       socket.disconnect();
     }
   });
 }
 
-socket.on("connect_error", () => {
-  const errorDiv = document.getElementById("authError");
-  if (errorDiv) errorDiv.innerText = "Сервер просыпается... Подождите 30 сек.";
+// Получение общего количества пользователей
+socket.on("global_online_count", (count) => {
+  document.getElementById("globalOnlineCount").innerText = count;
+});
+
+// Слушаем создание комнат другими пользователями
+socket.on("room_created", (roomName) => {
+  addRoomToSidebar(roomName);
 });
 
 socket.on("receive_message", (data) => appendMessage(data));
@@ -94,7 +101,6 @@ function sendMessage() {
   hideStickerPicker();
 }
 
-// Отправка стикера
 function sendSticker(stickerUrl) {
   socket.emit("send_message", {
     room: currentRoom,
@@ -103,7 +109,6 @@ function sendSticker(stickerUrl) {
     type: "sticker",
     time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
   });
-
   hideStickerPicker();
 }
 
@@ -160,14 +165,23 @@ function appendMessage(data) {
   container.scrollTop = container.scrollHeight;
 }
 
-function toggleStickerPicker() {
-  const picker = document.getElementById("stickerPicker");
-  picker.classList.toggle("hidden");
+function renderRoomsList(rooms) {
+  const roomsList = document.getElementById("roomsList");
+  roomsList.innerHTML = "";
+  rooms.forEach(r => addRoomToSidebar(r));
 }
 
-function hideStickerPicker() {
-  const picker = document.getElementById("stickerPicker");
-  if (picker) picker.classList.add("hidden");
+function addRoomToSidebar(roomName) {
+  const roomsList = document.getElementById("roomsList");
+  // Проверяем, существует ли уже элемент
+  if (document.getElementById(`room-${roomName}`)) return;
+
+  const li = document.createElement("li");
+  li.id = `room-${roomName}`;
+  li.className = `room-item ${roomName === currentRoom ? 'active' : ''}`;
+  li.innerHTML = `<div class="room-icon">#</div><div class="room-details"><span class="room-name">${roomName}</span></div>`;
+  li.onclick = () => switchRoom(roomName);
+  roomsList.appendChild(li);
 }
 
 function switchRoom(roomName) {
@@ -177,19 +191,23 @@ function switchRoom(roomName) {
   socket.emit("join_room", roomName);
 
   document.querySelectorAll(".room-item").forEach(el => {
-    el.classList.toggle("active", el.innerText.includes(roomName));
+    el.classList.toggle("active", el.id === `room-${roomName}`);
   });
 }
 
 function createRoom() {
-  const name = prompt("Название новой комнаты:");
+  const name = prompt("Название нового чата:");
   if (!name) return;
-  const li = document.createElement("li");
-  li.className = "room-item";
-  li.innerHTML = `<div class="room-icon">#</div><div class="room-details"><span class="room-name">${name}</span></div>`;
-  li.onclick = () => switchRoom(name);
-  document.getElementById("roomsList").appendChild(li);
-  switchRoom(name);
+  socket.emit("create_room", name);
+}
+
+function toggleStickerPicker() {
+  document.getElementById("stickerPicker").classList.toggle("hidden");
+}
+
+function hideStickerPicker() {
+  const picker = document.getElementById("stickerPicker");
+  if (picker) picker.classList.add("hidden");
 }
 
 function handleKeyPress(e) { if (e.key === "Enter") sendMessage(); }
