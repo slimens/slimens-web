@@ -1,8 +1,35 @@
-const SERVER_URL = "https://slimens-server.onrender.com"; // Ваш единственный сервер
+const SERVER_URL = "https://slimens-server.onrender.com";
 const socket = io(SERVER_URL, { autoConnect: false });
 
 let myNickname = "";
 let currentRoom = "Общий чат";
+
+// Готовые публичные стикеры Telegram/Emoji CDN
+const STICKER_LIST = [
+  "https://fonts.gstatic.com/s/e/notoemoji/latest/1f60d/512.webp", // Влюбленный
+  "https://fonts.gstatic.com/s/e/notoemoji/latest/1f602/512.webp", // Смех
+  "https://fonts.gstatic.com/s/e/notoemoji/latest/1f60e/512.webp", // Крутой
+  "https://fonts.gstatic.com/s/e/notoemoji/latest/1f970/512.webp", // Сердечки
+  "https://fonts.gstatic.com/s/e/notoemoji/latest/1fe60/512.webp", 
+  "https://fonts.gstatic.com/s/e/notoemoji/latest/1f44d/512.webp", // Лайк
+  "https://fonts.gstatic.com/s/e/notoemoji/latest/1f525/512.webp", // Огонь
+  "https://fonts.gstatic.com/s/e/notoemoji/latest/1f389/512.webp", // Праздник
+  "https://fonts.gstatic.com/s/e/notoemoji/latest/1fa90/512.webp"
+];
+
+// Инициализация сетки стикеров
+window.onload = () => {
+  const grid = document.getElementById("stickerGrid");
+  if (grid) {
+    STICKER_LIST.forEach(url => {
+      const img = document.createElement("img");
+      img.src = url;
+      img.className = "sticker-option";
+      img.onclick = () => sendSticker(url);
+      grid.appendChild(img);
+    });
+  }
+};
 
 function login() {
   const input = document.getElementById("nicknameInput");
@@ -25,7 +52,7 @@ function login() {
       document.getElementById("appContainer").classList.remove("hidden");
       switchRoom("Общий чат");
     } else {
-      errorDiv.innerText = response ? response.message : "Этот никнейм уже занят!";
+      errorDiv.innerText = response ? response.message : "Ошибка входа или ник занят";
       socket.disconnect();
     }
   });
@@ -33,7 +60,7 @@ function login() {
 
 socket.on("connect_error", () => {
   const errorDiv = document.getElementById("authError");
-  if (errorDiv) errorDiv.innerText = "Сервер просыпается... Подождите 30 секунд и нажмите еще раз.";
+  if (errorDiv) errorDiv.innerText = "Сервер просыпается... Подождите 30 сек.";
 });
 
 socket.on("receive_message", (data) => appendMessage(data));
@@ -55,16 +82,29 @@ function sendMessage() {
   const text = messageInput.value.trim();
   if (!text) return;
 
-  const messageData = {
+  socket.emit("send_message", {
     room: currentRoom,
     user: myNickname,
     text: text,
     type: "text",
     time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-  };
+  });
 
-  socket.emit("send_message", messageData);
   messageInput.value = "";
+  hideStickerPicker();
+}
+
+// Отправка стикера
+function sendSticker(stickerUrl) {
+  socket.emit("send_message", {
+    room: currentRoom,
+    user: myNickname,
+    stickerUrl: stickerUrl,
+    type: "sticker",
+    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  });
+
+  hideStickerPicker();
 }
 
 async function sendFile() {
@@ -89,11 +129,9 @@ async function sendFile() {
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       });
       fileInput.value = "";
-    } else {
-      alert("Не удалось загрузить файл.");
     }
   } catch (err) {
-    alert("Ошибка соединения с сервером при отправке файла.");
+    alert("Ошибка загрузки файла.");
   }
 }
 
@@ -102,18 +140,34 @@ function appendMessage(data) {
   const msgDiv = document.createElement("div");
   const isMe = data.user === myNickname;
   
-  msgDiv.className = `message ${isMe ? "my-message" : ""}`;
-  let content = `<div class="author">@${data.user} • ${data.time}</div>`;
-  
-  if (data.type === "file") {
-    content += `<a href="${data.fileUrl}" target="_blank">📄 ${data.fileName}</a>`;
+  if (data.type === "sticker") {
+    msgDiv.className = `message sticker-message ${isMe ? "my-message" : ""}`;
+    msgDiv.innerHTML = `<img src="${data.stickerUrl}" class="sticker-img" title="@${data.user}">`;
   } else {
-    content += `<div class="text">${escapeHtml(data.text)}</div>`;
+    msgDiv.className = `message ${isMe ? "my-message" : ""}`;
+    let content = `<div class="author">@${data.user}</div>`;
+    
+    if (data.type === "file") {
+      content += `<a href="${data.fileUrl}" target="_blank">📄 ${data.fileName}</a>`;
+    } else {
+      content += `<div class="text">${escapeHtml(data.text)}</div>`;
+    }
+    content += `<span class="time">${data.time}</span>`;
+    msgDiv.innerHTML = content;
   }
 
-  msgDiv.innerHTML = content;
   container.appendChild(msgDiv);
   container.scrollTop = container.scrollHeight;
+}
+
+function toggleStickerPicker() {
+  const picker = document.getElementById("stickerPicker");
+  picker.classList.toggle("hidden");
+}
+
+function hideStickerPicker() {
+  const picker = document.getElementById("stickerPicker");
+  if (picker) picker.classList.add("hidden");
 }
 
 function switchRoom(roomName) {
@@ -132,7 +186,7 @@ function createRoom() {
   if (!name) return;
   const li = document.createElement("li");
   li.className = "room-item";
-  li.innerText = `# ${name}`;
+  li.innerHTML = `<div class="room-icon">#</div><div class="room-details"><span class="room-name">${name}</span></div>`;
   li.onclick = () => switchRoom(name);
   document.getElementById("roomsList").appendChild(li);
   switchRoom(name);
