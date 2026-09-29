@@ -1,14 +1,78 @@
-/* Общий счетчик Slimens */
-.global-stats {
-  padding: 10px 16px;
-  background: #18222d;
-  font-size: 12px;
-  color: #64b5f6;
-  border-bottom: 1px solid #0f1721;
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-/* Поля авторизации */
-.modal-card input[type="password"] {
-  width: 100%; padding: 12px; background: #242f3d; border: 1px solid #2b5278;
-  border-radius: 10px; color: #fff; margin-bottom: 16px; outline: none; font-size: 14px;
+body {
+  background-color: #0f1721;
+  color: #fff;
+  min-height: 100vh;
+}
+
+.hidden { display: none !important; }
+
+/* Окно авторизации на весь экран */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #0f1721; /* Плотный тёмный фон */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999; /* Чтобы окно было поверх всего */
+  padding: 20px;
+}
+
+.modal-card {
+  background: #17212b;
+  padding: 24px;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 360px;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+}
+
+.modal-card input {
+  width: 100%;
+  padding: 12px;
+  background: #242f3d;
+  border: 1px solid #2b5278;
+  border-radius: 8px;
+  color: #fff;
+  margin-bottom: 12px;
+  outline: none;
+  font-size: 14px;
+}
+
+.modal-card button {
+  width: 100%;
+  padding: 12px;
+  background: #5288c1;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* Ограничиваем размер стикеров */
+.sticker-img {
+  max-width: 120px !important;
+  max-height: 120px !important;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+.sticker-option {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  cursor: pointer;
 }
