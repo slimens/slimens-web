@@ -2,7 +2,7 @@ const SERVER_URL = "https://slimens-server.onrender.com";
 const socket = io(SERVER_URL, { autoConnect: false });
 
 let myNickname = "";
-let currentRoom = "Чат телефапиков🍔";
+let currentRoom = "Общий чат";
 
 const STICKER_LIST = [
   "https://fonts.gstatic.com/s/e/notoemoji/latest/1f60d/512.webp",
@@ -13,9 +13,10 @@ const STICKER_LIST = [
   "https://fonts.gstatic.com/s/e/notoemoji/latest/1f525/512.webp"
 ];
 
-window.onload = () => {
+window.addEventListener("DOMContentLoaded", () => {
   const grid = document.getElementById("stickerGrid");
   if (grid) {
+    grid.innerHTML = "";
     STICKER_LIST.forEach(url => {
       const img = document.createElement("img");
       img.src = url;
@@ -24,7 +25,7 @@ window.onload = () => {
       grid.appendChild(img);
     });
   }
-};
+});
 
 function login() {
   const nickname = document.getElementById("nicknameInput").value.trim().replace(/^@/, '');
@@ -32,7 +33,7 @@ function login() {
   const errorDiv = document.getElementById("authError");
 
   if (!nickname || nickname.length < 3) {
-    errorDiv.innerText = "Никнейм должен быть от 3 символов";
+    errorDiv.innerText = "Никнейм от 3 символов";
     return;
   }
   if (!password) {
@@ -40,32 +41,32 @@ function login() {
     return;
   }
 
-  errorDiv.innerText = "Авторизация...";
+  errorDiv.innerText = "Подключение...";
   socket.connect();
 
   socket.emit("auth_user", { nickname, password }, (res) => {
     if (res && res.success) {
       myNickname = nickname;
       document.getElementById("displayNickname").innerText = `@${myNickname}`;
+      
+      // Скрываем окно входа и показываем чат
       document.getElementById("authModal").classList.add("hidden");
       document.getElementById("appContainer").classList.remove("hidden");
 
-      // Отрисовываем список комнат с сервера
       renderRoomsList(res.rooms);
       switchRoom("Общий чат");
     } else {
-      errorDiv.innerText = res ? res.message : "Ошибка входа";
+      errorDiv.innerText = res ? res.message : "Ошибка авторизации";
       socket.disconnect();
     }
   });
 }
 
-// Получение общего количества пользователей
 socket.on("global_online_count", (count) => {
-  document.getElementById("globalOnlineCount").innerText = count;
+  const el = document.getElementById("globalOnlineCount");
+  if (el) el.innerText = count;
 });
 
-// Слушаем создание комнат другими пользователями
 socket.on("room_created", (roomName) => {
   addRoomToSidebar(roomName);
 });
@@ -147,7 +148,7 @@ function appendMessage(data) {
   
   if (data.type === "sticker") {
     msgDiv.className = `message sticker-message ${isMe ? "my-message" : ""}`;
-    msgDiv.innerHTML = `<img src="${data.stickerUrl}" class="sticker-img" title="@${data.user}">`;
+    msgDiv.innerHTML = `<img src="${data.stickerUrl}" class="sticker-img">`;
   } else {
     msgDiv.className = `message ${isMe ? "my-message" : ""}`;
     let content = `<div class="author">@${data.user}</div>`;
@@ -173,13 +174,12 @@ function renderRoomsList(rooms) {
 
 function addRoomToSidebar(roomName) {
   const roomsList = document.getElementById("roomsList");
-  // Проверяем, существует ли уже элемент
   if (document.getElementById(`room-${roomName}`)) return;
 
   const li = document.createElement("li");
   li.id = `room-${roomName}`;
   li.className = `room-item ${roomName === currentRoom ? 'active' : ''}`;
-  li.innerHTML = `<div class="room-icon">#</div><div class="room-details"><span class="room-name">${roomName}</span></div>`;
+  li.innerHTML = `<div class="room-icon">#</div><span class="room-name">${roomName}</span>`;
   li.onclick = () => switchRoom(roomName);
   roomsList.appendChild(li);
 }
