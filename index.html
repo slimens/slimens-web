@@ -4,28 +4,37 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Slimens Web</title>
-  <!-- Принудительно подключаем стили с префиксом v=2 для сброса кэша браузера -->
-  <link rel="stylesheet" href="./styles.css?v=2">
+  <link rel="stylesheet" href="./styles.css?v=4">
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 </head>
 <body>
 
-  <!-- Экран авторизации (по умолчанию открыт поверх всего) -->
+  <!-- Окно авторизации -->
   <div id="authModal" class="modal-overlay">
     <div class="modal-card">
       <div class="logo-icon">✈️</div>
       <h2>Slimens Messenger</h2>
-      <p>Введите никнейм и пароль для входа</p>
+      <p>Выберите тестовый аккаунт или введите данные</p>
       
-      <input type="text" id="nicknameInput" placeholder="@username" maxlength="20" autocomplete="off">
-      <input type="password" id="passwordInput" placeholder="Пароль" maxlength="30" onkeydown="if(event.key==='Enter') login()">
-      
-      <button type="button" onclick="login()">Войти / Зарегистрироваться</button>
+      <!-- Быстрый выбор аккаунта -->
+      <select id="quickSelect" class="preset-select" onchange="autoFillAccount()">
+        <option value="">-- Быстрый выбор аккаунта --</option>
+        <option value="user1:pass1">Пользователь @user1 (pass1)</option>
+        <option value="user2:pass2">Пользователь @user2 (pass2)</option>
+        <option value="user3:pass3">Пользователь @user3 (pass3)</option>
+        <option value="user4:pass4">Пользователь @user4 (pass4)</option>
+        <option value="user5:pass5">Пользователь @user5 (pass5)</option>
+      </select>
+
+      <input type="text" id="nicknameInput" placeholder="Логин (например, user1)" autocomplete="off">
+      <input type="password" id="passwordInput" placeholder="Пароль (например, pass1)" autocomplete="off" onkeydown="if(event.key==='Enter') login()">
+
+      <button type="button" class="btn-primary" onclick="login()">Войти в мессенджер</button>
       <div id="authError" class="auth-error"></div>
     </div>
   </div>
 
-  <!-- Главный интерфейс приложения -->
+  <!-- Главный чат -->
   <div id="appContainer" class="app-container hidden">
     
     <aside class="sidebar">
@@ -66,7 +75,7 @@
 
       <div id="messagesContainer" class="messages-container"></div>
 
-      <!-- Выпадающая панель стикеров -->
+      <!-- Выбор стикеров -->
       <div id="stickerPicker" class="sticker-picker hidden">
         <div class="sticker-header">Стикеры</div>
         <div class="sticker-grid" id="stickerGrid"></div>
@@ -87,6 +96,6 @@
 
   </div>
 
-  <script src="./app.js?v=2"></script>
+  <script src="./app.js?v=4"></script>
 </body>
 </html>
