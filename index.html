@@ -3,99 +3,29 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Slimens Web</title>
-  <link rel="stylesheet" href="./styles.css?v=4">
+  <title>Чат Телефаперов</title>
+  <link rel="stylesheet" href="./styles.css">
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 </head>
 <body>
 
-  <!-- Окно авторизации -->
-  <div id="authModal" class="modal-overlay">
-    <div class="modal-card">
-      <div class="logo-icon">✈️</div>
-      <h2>Slimens Messenger</h2>
-      <p>Выберите тестовый аккаунт или введите данные</p>
+  <div class="chat-container">
+    <header class="chat-header">
+      <h2>Чат Телефаперов</h2>
+      <span id="userBadge" class="user-badge"></span>
+    </header>
+
+    <div id="messagesContainer" class="messages-container"></div>
+
+    <footer class="chat-footer">
+      <input type="file" id="fileInput" hidden onchange="sendFile()">
+      <button type="button" class="icon-btn" onclick="document.getElementById('fileInput').click()" title="Файл">📎</button>
       
-      <!-- Быстрый выбор аккаунта -->
-      <select id="quickSelect" class="preset-select" onchange="autoFillAccount()">
-        <option value="">-- Быстрый выбор аккаунта --</option>
-        <option value="user1:pass1">Пользователь @user1 (pass1)</option>
-        <option value="user2:pass2">Пользователь @user2 (pass2)</option>
-        <option value="user3:pass3">Пользователь @user3 (pass3)</option>
-        <option value="user4:pass4">Пользователь @user4 (pass4)</option>
-        <option value="user5:pass5">Пользователь @user5 (pass5)</option>
-      </select>
-
-      <input type="text" id="nicknameInput" placeholder="Логин (например, user1)" autocomplete="off">
-      <input type="password" id="passwordInput" placeholder="Пароль (например, pass1)" autocomplete="off" onkeydown="if(event.key==='Enter') login()">
-
-      <button type="button" class="btn-primary" onclick="login()">Войти в мессенджер</button>
-      <div id="authError" class="auth-error"></div>
-    </div>
+      <input type="text" id="messageInput" placeholder="Написать сообщение..." onkeydown="if(event.key==='Enter') sendMessage()" autocomplete="off">
+      <button type="button" class="send-btn" onclick="sendMessage()">➤</button>
+    </footer>
   </div>
 
-  <!-- Главный чат -->
-  <div id="appContainer" class="app-container hidden">
-    
-    <aside class="sidebar">
-      <div class="user-profile">
-        <div class="avatar">👤</div>
-        <div class="user-info">
-          <strong id="displayNickname">@username</strong>
-          <span class="status-online">● онлайн</span>
-        </div>
-      </div>
-      
-      <div class="global-stats">
-        <span>Всего в Slimens: <strong id="globalOnlineCount">0</strong></span>
-      </div>
-
-      <div class="sidebar-section">
-        <div class="section-header">
-          <span>ЧАТЫ</span>
-          <button class="add-room-btn" onclick="createRoom()" title="Создать чат">+</button>
-        </div>
-        <ul id="roomsList" class="rooms-list"></ul>
-      </div>
-
-      <div class="sidebar-section users-section">
-        <div class="section-header">
-          <span>В ЭТОМ ЧАТЕ (<span id="onlineCount">0</span>)</span>
-        </div>
-        <ul id="usersList" class="users-list"></ul>
-      </div>
-    </aside>
-
-    <main class="chat-area">
-      <header class="chat-header">
-        <div class="header-info">
-          <h2 id="currentRoomTitle"># Общий чат</h2>
-        </div>
-      </header>
-
-      <div id="messagesContainer" class="messages-container"></div>
-
-      <!-- Выбор стикеров -->
-      <div id="stickerPicker" class="sticker-picker hidden">
-        <div class="sticker-header">Стикеры</div>
-        <div class="sticker-grid" id="stickerGrid"></div>
-      </div>
-
-      <footer class="chat-footer">
-        <input type="file" id="fileInput" hidden onchange="sendFile()">
-        <button type="button" class="icon-btn" onclick="document.getElementById('fileInput').click()" title="Прикрепить файл">📎</button>
-        
-        <div class="input-wrapper">
-          <input type="text" id="messageInput" placeholder="Написать сообщение..." onkeydown="handleKeyPress(event)" autocomplete="off">
-          <button type="button" class="icon-btn sticker-btn" onclick="toggleStickerPicker()">😊</button>
-        </div>
-
-        <button type="button" class="send-btn" onclick="sendMessage()">➤</button>
-      </footer>
-    </main>
-
-  </div>
-
-  <script src="./app.js?v=4"></script>
+  <script src="./app.js"></script>
 </body>
 </html>
