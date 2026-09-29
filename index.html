@@ -2,29 +2,30 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Slimens Web</title>
-  <link rel="stylesheet" href="styles.css">
+  <!-- Принудительно подключаем стили с префиксом v=2 для сброса кэша браузера -->
+  <link rel="stylesheet" href="./styles.css?v=2">
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 </head>
 <body>
 
-  <!-- Модальное окно Авторизации/Регистрации -->
+  <!-- Экран авторизации (по умолчанию открыт поверх всего) -->
   <div id="authModal" class="modal-overlay">
     <div class="modal-card">
       <div class="logo-icon">✈️</div>
       <h2>Slimens Messenger</h2>
       <p>Введите никнейм и пароль для входа</p>
       
-      <input type="text" id="nicknameInput" placeholder="@username" maxlength="20">
+      <input type="text" id="nicknameInput" placeholder="@username" maxlength="20" autocomplete="off">
       <input type="password" id="passwordInput" placeholder="Пароль" maxlength="30" onkeydown="if(event.key==='Enter') login()">
       
-      <button onclick="login()">Войти / Зарегистрироваться</button>
+      <button type="button" onclick="login()">Войти / Зарегистрироваться</button>
       <div id="authError" class="auth-error"></div>
     </div>
   </div>
 
-  <!-- Главный интерфейс мессенджера -->
+  <!-- Главный интерфейс приложения -->
   <div id="appContainer" class="app-container hidden">
     
     <aside class="sidebar">
@@ -32,12 +33,12 @@
         <div class="avatar">👤</div>
         <div class="user-info">
           <strong id="displayNickname">@username</strong>
-          <span class="status-online">онлайн</span>
+          <span class="status-online">● онлайн</span>
         </div>
       </div>
       
       <div class="global-stats">
-        <span>Всего в Slimens онлайн: <strong id="globalOnlineCount">0</strong></span>
+        <span>Всего в Slimens: <strong id="globalOnlineCount">0</strong></span>
       </div>
 
       <div class="sidebar-section">
@@ -65,7 +66,7 @@
 
       <div id="messagesContainer" class="messages-container"></div>
 
-      <!-- Панель стикеров -->
+      <!-- Выпадающая панель стикеров -->
       <div id="stickerPicker" class="sticker-picker hidden">
         <div class="sticker-header">Стикеры</div>
         <div class="sticker-grid" id="stickerGrid"></div>
@@ -73,19 +74,19 @@
 
       <footer class="chat-footer">
         <input type="file" id="fileInput" hidden onchange="sendFile()">
-        <button class="icon-btn" onclick="document.getElementById('fileInput').click()" title="Прикрепить файл">📎</button>
+        <button type="button" class="icon-btn" onclick="document.getElementById('fileInput').click()" title="Прикрепить файл">📎</button>
         
         <div class="input-wrapper">
-          <input type="text" id="messageInput" placeholder="Написать сообщение..." onkeydown="handleKeyPress(event)">
-          <button class="icon-btn sticker-btn" onclick="toggleStickerPicker()">😊</button>
+          <input type="text" id="messageInput" placeholder="Написать сообщение..." onkeydown="handleKeyPress(event)" autocomplete="off">
+          <button type="button" class="icon-btn sticker-btn" onclick="toggleStickerPicker()">😊</button>
         </div>
 
-        <button class="send-btn" onclick="sendMessage()">➤</button>
+        <button type="button" class="send-btn" onclick="sendMessage()">➤</button>
       </footer>
     </main>
 
   </div>
 
-  <script src="app.js"></script>
+  <script src="./app.js?v=2"></script>
 </body>
 </html>
